@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$KOL Whitepaper — King of Kols</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:   #FFD700;
+    --gold2:  #FFA500;
+    --red:    #FF2D55;
+    --green:  #00FF88;
+    --bg:     #060608;
+    --bg2:    #0D0D14;
+    --bg3:    #141420;
+    --border: rgba(255,215,0,0.15);
+    --text:   #FFFFFF;
+    --muted:  rgba(255,255,255,0.45);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    line-height: 1.75;
+  }
+
+  /* scanline + noise */
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none; z-index: 9999;
+  }
+  body::after {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9998; opacity: 0.4;
+  }
+
+  /* ── Ticker tape ───────────────────────────────────────────── */
+  .ticker-tape {
+    background: var(--gold);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    padding: 8px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker 30s linear infinite;
+  }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── Sticky nav bar ────────────────────────────────────────── */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    z-index: 200;
+    flex-wrap: wrap;
+  }
+  .top-nav a {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .top-nav a:hover { color: var(--gold); }
+  .top-nav .nav-logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--gold);
+  }
+  .top-nav .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+  /* ── Header ────────────────────────────────────────────────── */
+  header {
+    position: relative;
+    text-align: center;
+    padding: 60px 20px 48px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .crown-glow {
+    position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+    width: 500px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(255,215,0,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .ticker-badge {
+    display: inline-block;
+    background: var(--gold); color: #000;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700; font-size: 11px; letter-spacing: 3px;
+    padding: 5px 14px; border-radius: 2px; margin-bottom: 16px;
+    animation: pulse-badge 2s ease-in-out infinite;
+  }
+  @keyframes pulse-badge {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.5); }
+    50%      { box-shadow: 0 0 20px 8px rgba(255,215,0,0.2); }
+  }
+  .sub-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; letter-spacing: 6px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 8px; margin-top: 12px;
+  }
+  .version-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    color: rgba(255,255,255,0.2);
+    margin-top: 8px;
+  }
+
+  /* ── Stats bar ─────────────────────────────────────────────── */
+  .stats-bar {
+    display: flex; justify-content: center;
+    gap: 0; flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .stat-item { padding: 14px 28px; border-right: 1px solid var(--border); text-align: center; flex: 1; min-width: 130px; }
+  .stat-item:last-child { border-right: none; }
+  .stat-label { font-size: 9px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; margin-bottom: 4px; }
+  .stat-value { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--gold); }
+  .live-dot { display: inline-block; width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-right: 6px; animation: blink 1.2s ease-in-out infinite; vertical-align: middle; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+  /* ── Content ───────────────────────────────────────────────── */
+  .content {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── TOC ───────────────────────────────────────────────────── */
+  .toc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin-bottom: 52px;
+  }
+  .toc-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px; letter-spacing: 4px;
+    color: var(--gold); margin-bottom: 20px; text-align: center;
+  }
+  .toc ul { list-style: none; }
+  .toc li { margin-bottom: 12px; }
+  .toc a { color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 12px; font-size: 14px; }
+  .toc a:hover { color: var(--gold); }
+  .toc .num { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--gold); min-width: 36px; font-size: 12px; }
+  .toc .desc { color: var(--muted); font-size: 12px; font-family: 'Space Mono', monospace; }
+
+  /* ── Sections ──────────────────────────────────────────────── */
+  section { margin-bottom: 64px; scroll-margin-top: 100px; }
+
+  .section-header { margin-bottom: 24px; }
+  .section-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 28px; letter-spacing: 3px;
+    color: var(--gold);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px; margin-bottom: 20px;
+  }
+
+  p { margin-bottom: 14px; font-size: 15px; color: rgba(255,255,255,0.85); }
+  ul, ol { padding-left: 22px; margin-bottom: 16px; }
+  li { margin-bottom: 8px; font-size: 15px; color: rgba(255,255,255,0.8); }
+  strong { color: var(--text); }
+  h3 { color: var(--text); font-size: 16px; margin: 20px 0 10px; letter-spacing: 1px; }
+
+  /* ── Formula box ───────────────────────────────────────────── */
+  .formula-box {
+    background: rgba(255,215,0,0.04);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-left: 4px solid var(--gold);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .formula-box .f-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .formula-box .f-line  { font-family: 'Space Mono', monospace; font-size: 14px; color: var(--gold); margin-bottom: 8px; }
+  .formula-box .f-note  { font-size: 13px; color: var(--muted); margin-top: 10px; font-family: 'Inter', sans-serif; }
+
+  /* ── Tables ────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  th, td { padding: 13px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; }
+  th { background: var(--bg3); color: var(--gold); font-size: 11px; letter-spacing: 2px; font-family: 'Space Mono', monospace; }
+  tr:last-child td { border-bottom: none; }
+  .pts { color: var(--gold); font-weight: 700; font-family: 'Space Mono', monospace; }
+  .verified { color: var(--green); font-size: 12px; }
+
+  /* ── Phase badges ──────────────────────────────────────────── */
+  .phase-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 3px;
+    font-size: 10px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; font-family: 'Space Mono', monospace; margin-bottom: 14px;
+  }
+  .phase-live { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); }
+  .phase-dev  { background: rgba(255,165,0,0.08); border: 1px solid rgba(255,165,0,0.25); color: var(--gold2); }
+
+  /* ── Callout ───────────────────────────────────────────────── */
+  .callout {
+    background: rgba(255,215,0,0.04);
+    border-left: 4px solid var(--gold);
+    padding: 14px 18px; margin: 16px 0;
+    border-radius: 0 4px 4px 0; font-size: 14px;
+    color: rgba(255,255,255,0.8);
+  }
+
+  /* ── Example box ───────────────────────────────────────────── */
+  .example {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 20px 24px; margin: 20px 0;
+  }
+  .example .ex-label { font-size: 9px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; margin-bottom: 12px; }
+  .example .ex-row { font-family: 'Space Mono', monospace; font-size: 13px; margin-bottom: 6px; color: rgba(255,255,255,0.8); }
+  .example .ex-row span { color: var(--gold); }
+  .example .ex-divider { border-top: 1px solid var(--border); margin: 10px 0; }
+  .example .ex-total { color: var(--green); font-weight: 700; }
+
+  /* ── Footer ────────────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg2);
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .footer-logo { font-family: 'Bebas Neue', cursive; font-size: 28px; letter-spacing: 4px; color: var(--gold); margin-bottom: 8px; }
+  .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; flex-wrap: wrap; }
+  .footer-links a { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-disc { font-size: 11px; color: rgba(255,255,255,0.2); max-width: 500px; margin: 0 auto; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- TICKER TAPE -->
+<div class="ticker-tape">
+  <div class="ticker-inner" id="tickerInner">
+    $KOL — KING OF KOLS &nbsp;★&nbsp; RAID. RANK. RULE. 👑 &nbsp;★&nbsp; KOL-TO-EARN ON SOLANA &nbsp;★&nbsp; JOIN THE RAID BOT TODAY &nbsp;★&nbsp; HOLD $KOL · RAID TWEETS · EARN SOL &nbsp;★&nbsp; $KOL — KING OF KOLS &nbsp;★&nbsp; RAID. RANK. RULE. 👑 &nbsp;★&nbsp; KOL-TO-EARN ON SOLANA &nbsp;★&nbsp; JOIN THE RAID BOT TODAY &nbsp;★&nbsp; HOLD $KOL · RAID TWEETS · EARN SOL &nbsp;★&nbsp;
+  </div>
+</div>
+
+<!-- STICKY NAV -->
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">KING OF KOLS</a>
+  <div class="nav-links">
+    <a href="index.html">← Back to Site</a>
+    <a href="index.html#phase1">Raid Bot</a>
+    <a href="index.html#phase2">Leaderboard</a>
+    <a href="#">↑ Top</a>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<header>
+  <div class="crown-glow"></div>
+  <div class="ticker-badge">$KOL WHITEPAPER — V1.3</div>
+  <img src="logo.jpg" alt="King of Kols" style="width:160px;height:160px;object-fit:contain;border-radius:12px;margin:0 auto 12px;display:block;box-shadow:0 0 40px rgba(255,215,0,0.25);">
+  <p class="sub-title">The KOL-to-Earn Protocol on Solana</p>
+  <p class="version-tag">Version 1.3 · June 2026</p>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-label"><span class="live-dot"></span>Bot Status</div>
+    <div class="stat-value" style="color:var(--green);font-size:13px;letter-spacing:2px;">LIVE</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Total Supply</div>
+    <div class="stat-value" style="font-size:14px;">1,000,000,000</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Min. Hold</div>
+    <div class="stat-value" style="font-size:14px;">1,000,000</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Fee Split</div>
+    <div class="stat-value" style="font-size:14px;">50 / 50</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Distribution</div>
+    <div class="stat-value" style="font-size:13px;letter-spacing:1px;">EVERY 24H</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ul>
+      <li><a href="#intro"><span class="num">1.</span> Introduction <span class="desc">— Overview of the KOL-to-Earn vision</span></a></li>
+      <li><a href="#tokenomics"><span class="num">2.</span> Core Tokenomics <span class="desc">— Supply, fee splits, reward pool</span></a></li>
+      <li><a href="#phase1"><span class="num">3.</span> Phase 1 — Raid Bot <span class="desc">— Eligibility, points, dice multiplier</span></a></li>
+      <li><a href="#formula"><span class="num">3.4</span> Reward Formula <span class="desc">— Proportional split with worked examples</span></a></li>
+      <li><a href="#fees"><span class="num">3.5</span> Fee Sources <span class="desc">— How trading fees fund the pool</span></a></li>
+      <li><a href="#phase2"><span class="num">4.</span> Phase 2 — KOL Leaderboard <span class="desc">— Call tracking, rankings, Hall of Fame</span></a></li>
+      <li><a href="#flywheel"><span class="num">5.</span> The Flywheel <span class="desc">— Self-reinforcing growth loop</span></a></li>
+      <li><a href="#roadmap"><span class="num">6.</span> 6-Month Roadmap <span class="desc">— Phases and milestones</span></a></li>
+      <li><a href="#mission"><span class="num">7.</span> Mission &amp; Vision <span class="desc">— Hold. Raid. Rank. Earn.</span></a></li>
+    </ul>
+  </div>
+
+  <!-- 1. Introduction -->
+  <section id="intro">
+    <div class="section-title">1. Introduction</div>
+    <p><strong>King of Kols ($KOL)</strong> is a KOL-to-Earn protocol on Solana. It rewards holders and raiders for driving genuine social attention on X/Twitter. Unlike typical meme coins, Raid-to-Earn is <strong>live from Day 1</strong>.</p>
+    <p>Powered by a Telegram bot, $KOL automates wallet linking, X verification, raid tracking, leaderboards, Hall of Fame, and daily on-chain SOL distributions — creating a transparent, self-sustaining ecosystem where community engagement directly fuels token value through fees and burns.</p>
+  </section>
+
+  <!-- 2. Tokenomics -->
+  <section id="tokenomics">
+    <div class="section-title">2. Core Tokenomics</div>
+    <ul>
+      <li><strong>Total Supply</strong>: 1,000,000,000 $KOL (launched on Pump.fun)</li>
+      <li><strong>Fee Split</strong> (from Pump.fun creator fees / Raydium LP post-migration):
+        <ul>
+          <li><strong>50% → Reward Pool</strong> — Daily SOL distributions to active holders and raiders</li>
+          <li><strong>50% → Marketing Treasury</strong> — Ads, DEX boosts, influencers, listings</li>
+        </ul>
+      </li>
+      <li><strong>Buyback &amp; Burn Engine</strong> — Ongoing mechanism to reduce supply and strengthen holder value.</li>
+    </ul>
+  </section>
+
+  <!-- 3. Phase 1 -->
+  <section id="phase1">
+    <div class="section-title">3. Phase 1 — Raid Bot</div>
+    <div class="phase-badge phase-live">● Live Now</div>
+
+    <h3>Eligibility</h3>
+    <p>To receive SOL rewards, all three conditions must be met:</p>
+    <ul>
+      <li>Hold <strong>≥ 1,000,000 $KOL</strong> in a linked Solana wallet — checked on-chain at every distribution</li>
+      <li>Link a Solana wallet via <code style="background:var(--bg3);padding:2px 8px;border-radius:3px;font-size:13px;">/linkwallet</code> in the Telegram bot</li>
+      <li>Earn <strong>≥ 1 raid point</strong> in the current 24h cycle</li>
+    </ul>
+    <div class="callout">No Twitter Blue / verified badge required. Any holder who raids qualifies.</div>
+
+    <h3>Points per Action</h3>
+    <table>
+      <thead><tr><th>Action</th><th>Points</th><th>Verification</th></tr></thead>
+      <tbody>
+        <tr><td>🔁 Retweet</td><td><span class="pts">2 pts</span></td><td><span class="verified">✓ Verified via SocialData API</span></td></tr>
+        <tr><td>💬 Reply</td><td><span class="pts">5 pts</span></td><td><span class="verified">✓ Verified via SocialData API</span></td></tr>
+        <tr><td>🔖 Bookmark</td><td><span class="pts">25 pts</span></td><td>Self-reported (X API hides bookmarks from third parties)</td></tr>
+        <tr><td>🎲 Dice Bonus</td><td><span class="pts">1x → 5x</span></td><td>Multiplies all points earned in that raid</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:var(--muted);">Note: Likes are not included — X/Twitter made likes private in 2023, making third-party verification impossible.</p>
+
+    <h3>Dice Multiplier System</h3>
+    <p>Before each raid, participants can roll their dice for a point multiplier:</p>
+    <ul>
+      <li>Up to <strong>3 rolls</strong> per raid — choose to keep a roll or try your luck again</li>
+      <li>Once you reroll, the previous result is gone — no going back</li>
+      <li>The 3rd roll is always final and locks automatically</li>
+      <li>Multiplier resets after each raid ends and after each 24h distribution</li>
+    </ul>
+    <p>Dice tiers: 🎲 (1x) · 🎲🎲 (1.5x) · 🎲🎲🎲 (2x) · ⚡🎲⚡ (3x) · 🔥🎲🔥 (4x) · 👑🎲👑 (5x)</p>
+  </section>
+
+  <!-- 3.4 Formula -->
+  <section id="formula">
+    <div class="section-title">3.4 Reward Formula</div>
+    <p>The reward pool splits proportionally every 24 hours using a combined weight formula. No tiers, no caps on distribution, no complex normalization — <strong>100% of the pool always distributes.</strong></p>
+
+    <div class="formula-box">
+      <div class="f-label">Formula</div>
+      <div class="f-line">weight &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= &nbsp;min(token_balance, 30,000,000) × window_points</div>
+      <div class="f-line">your_payout &nbsp;= &nbsp;( your_weight / total_weight ) × pool</div>
+      <div class="f-note">Token balance is capped at 30M — holding more gives no extra weight, so active raiders always matter. Points include any dice multiplier applied during the raid.</div>
+    </div>
+
+    <h3>Example — 3 Participants</h3>
+    <div class="example">
+      <div class="ex-label">1 SOL pool</div>
+      <div class="ex-row">Person A: &nbsp;30,000,000 tokens × 500 pts = <span>15,000,000,000</span> weight</div>
+      <div class="ex-row">Person B: &nbsp;&nbsp;5,000,000 tokens × 200 pts = <span>&nbsp;1,000,000,000</span> weight</div>
+      <div class="ex-row">Person C: &nbsp;&nbsp;1,000,000 tokens × 100 pts = <span>&nbsp;&nbsp;&nbsp;100,000,000</span> weight</div>
+      <div class="ex-divider"></div>
+      <div class="ex-row">Total weight: <span>16,100,000,000</span></div>
+      <div class="ex-divider"></div>
+      <div class="ex-row">Person A: 15B / 16.1B × 1 SOL = <span class="ex-total">0.9317 SOL</span></div>
+      <div class="ex-row">Person B: &nbsp;1B / 16.1B × 1 SOL = <span class="ex-total">0.0621 SOL</span></div>
+      <div class="ex-row">Person C: 0.1B / 16.1B × 1 SOL = <span class="ex-total">0.0062 SOL</span></div>
+      <div class="ex-divider"></div>
+      <div class="ex-row ex-total">Total: 1.000 SOL distributed — 100% ✓</div>
+    </div>
+
+    <div class="callout">Unlike fixed-percentage systems, this formula works at any community size — 2 people or 2,000. The pool always fully distributes.</div>
+  </section>
+
+  <!-- 3.5 Fees -->
+  <section id="fees">
+    <div class="section-title">3.5 Reward Pool Fee Sources</div>
+    <p>The Reward Pool is funded exclusively from real trading activity — no artificial inflation:</p>
+    <table>
+      <thead><tr><th>Fee Source</th><th>Frequency</th><th>Split</th></tr></thead>
+      <tbody>
+        <tr><td>Pump.fun Creator Vault</td><td>Every 30 minutes</td><td>50% Pool / 50% Marketing</td></tr>
+        <tr><td>Raydium CPMM LP Fees</td><td>Every 30 minutes</td><td>50% Pool / 50% Marketing</td></tr>
+      </tbody>
+    </table>
+    <p>More trading volume = larger reward pool = bigger payouts for raiders. The system is self-funding.</p>
+  </section>
+
+  <!-- 4. Phase 2 -->
+  <section id="phase2">
+    <div class="section-title">4. Phase 2 — KOL Leaderboard</div>
+    <div class="phase-badge phase-dev">🔧 Under Development</div>
+    <p>Phase 2 introduces a public KOL tracking dashboard measuring the real market impact of calls made on X:</p>
+    <ul>
+      <li><strong>Auto-detection</strong> — Any tweet mentioning $KOL is captured, timestamped, and attributed automatically</li>
+      <li><strong>1-Hour Impact Window</strong> — Buy volume in the 60 minutes after each call = that call's score</li>
+      <li><strong>Hourly Leaderboard</strong> — Rankings reset every hour. Top caller gets crowned to the Hall of Fame</li>
+      <li><strong>Hall of Fame</strong> — Permanent record of hourly champions</li>
+      <li><strong>Live Price Chart</strong> — Candlestick chart with KOL call markers pinned on-chart</li>
+    </ul>
+  </section>
+
+  <!-- 5. Flywheel -->
+  <section id="flywheel">
+    <div class="section-title">5. The Flywheel</div>
+    <p>More Holders → More Raiders → More Social Attention → More Volume → More Fees → Bigger Reward Pool → More Raiders.</p>
+    <p><strong>The Crown Rewards Attention.</strong> Every SOL distributed to active raiders is earned through real engagement — not marketing spend, not bots.</p>
+  </section>
+
+  <!-- 6. Roadmap -->
+  <section id="roadmap">
+    <div class="section-title">6. 6-Month Roadmap</div>
+    <h3>Phase 1 — Launch &amp; Conquest (Month 1) <span style="color:var(--green);font-size:12px;font-family:'Space Mono',monospace;">● LIVE</span></h3>
+    <p>Token launch on Pump.fun. Raid-to-Earn bot live from day 1. Wallet and X linking. 50/50 fee split. Proportional SOL distribution every 24h. Goals: 2,500 holders, 500 linked wallets.</p>
+
+    <h3>Phase 2 — Kingdom Growth (Month 2) <span style="color:var(--gold2);font-size:12px;font-family:'Space Mono',monospace;">🔧 IN DEV</span></h3>
+    <p>KOL leaderboard V1, hourly rankings, Hall of Fame, price chart with call markers. Goals: 5,000 holders.</p>
+
+    <h3>Phase 3 — Dominate Attention (Months 3–4)</h3>
+    <p>AI-powered call tracking, KOL database, DEXTools and CoinGecko listings. Market cap milestone boosts.</p>
+
+    <h3>Phase 4 — Kingdom Wars (Month 5)</h3>
+    <p>Community battle events with bonus reward pools. Goal: 15,000–20,000 holders.</p>
+
+    <h3>Phase 5–6 — The Attention Economy (Month 6)</h3>
+    <p>Sponsored raids, Crown Marketplace, 25,000+ holders, millions of verified engagements.</p>
+  </section>
+
+  <!-- 7. Mission -->
+  <section id="mission">
+    <div class="section-title">7. Mission &amp; Vision</div>
+    <p><strong>Hold. Raid. Rank. Earn.</strong></p>
+    <p>The more genuine attention you create, the more you earn. $KOL aligns holder incentives with real on-chain growth — not fake volume, not bots, but real community engagement verified on-chain.</p>
+    <p style="font-family:'Bebas Neue',cursive;font-size:3rem;letter-spacing:4px;color:var(--gold);text-align:center;margin-top:40px;">RAID. RANK. RULE. 👑</p>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">KING OF KOLS</div>
+  <div class="footer-links">
+    <a href="#">X (Twitter)</a>
+    <a href="#">Telegram</a>
+    <a href="#">Chart</a>
+    <a href="#">Buy $KOL</a>
+    <a href="index.html">Home</a>
+  </div>
+  <div class="footer-disc">$KOL is a community-driven meme coin launched on Pump.fun. Not financial advice. Trade responsibly.</div>
+</footer>
+
+</body>
+</html>
